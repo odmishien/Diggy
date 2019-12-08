@@ -1,0 +1,82 @@
+@import url(https://fonts.googleapis.com/css?family=Press+Start+2P);
+
+body {
+  height: 100vh;
+  overflow-x: hidden;
+  background: #232526; /* fallback for old browsers */
+  background: -webkit-linear-gradient(to right, #232526, #414345); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to right, #232526, #414345); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+.hide{
+  display:none !important;
+}
+
+input[type="range"] {
+  border-top-width: 0px;
+  border-right-width: 0px;
+  border-bottom-width: 0px;
+  border-left-width: 0px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  background-color: #1DB954;
+}
+input[type=range] + .thumb {
+  background-color: #1DB954;
+}
+input[type=range] + .thumb.active .value {
+  color: #000000;
+;
+}
+
+h1 {
+  font-family: 'Press Start 2P', cursive;
+  color: white;
+}
+h6 {
+  color: white;
+}
+
+.btn {
+  background-color: #1DB954;
+  margin-top: 10px;
+}
+.btn:hover {
+  background-color: rgb(46, 216, 106)
+}
+.btn:active{
+  background-color: #1DB954;
+}
+.btn:focus{
+  background-color: #1DB954;
+}
+
+#happiness::before {
+  content: "😢";
+  font-size: large;
+}
+
+#happiness::after {
+  content: "🤗";
+  font-size: large;
+}
+
+#tempo::before {
+  content: "‍🐢";
+  font-size: large;
+}
+
+#tempo::after {
+  content: "🐇";
+  font-size: large;
+}
+
+#energy::before {
+  content: "💤";
+  font-size: large;
+}
+
+#energy::after {
+  content: "💥";
+  font-size: large;
+}
