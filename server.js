@@ -209,7 +209,7 @@ app.get("/dig", async (req, res) => {
         if (properTracks.length > 6) {
           // もう日本時間にしたろ
           let now = new Date().toLocaleString({ timeZone: 'Asia/Tokyo' });
-          let ts = dateformat(now, "yyyy/mm/dd H:M:s");
+          let ts = dateformat(now, "yyyy/MM/dd HH:mm:ss");
           spotifyApi
             .createPlaylist(userId, ts)
             .then(data => {
@@ -243,7 +243,7 @@ app.get("/dig", async (req, res) => {
     }
 
     function isProperTrack(feature) {
-      judgeCount = 0;
+      let judgeCount = 0;
       if (
         happinessVal / 100 - tolerance < feature.valence &&
         feature.valence < happinessVal / 100 + tolerance
