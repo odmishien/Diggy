@@ -15,14 +15,6 @@ const tempoTolerance = 20;
 const queryStrs =
   "abcdefghijklmnopqrstuvwxyzあいうえおかきくけこさしすせそたちってとなにぬねのはひふへほまみむめもやゆよわをん";
 
-let access_token, refresh_token, userId;
-
-let spotifyApi = new SpotifyWebApi({
-  clientId: client_id,
-  clientSecret: client_secret,
-  redirectUri: redirect_uri
-});
-
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
@@ -49,9 +41,10 @@ app
   .use(cors())
   .use(cookieParser());
 
-app.get("/", function(req, res) {
-  console.log(access_token);
-  if (access_token && refresh_token) {
+app.get("/", function (req, res) {
+  let access_token = req.cookies.at;
+  let userId = req.cookies.userId;
+  if (access_token && userId) {
     res.sendFile(path.join(__dirname, "public/index.html"));
   } else {
     res.sendFile(path.join(__dirname, "public/login.html"));
@@ -108,12 +101,20 @@ app.get("/callback", function(req, res) {
       json: true
     };
 
-    request.post(authOptions, function(error, response, body) {
+    request.post(authOptions, async function(error, response, body) {
       if (!error && response.statusCode === 200) {
-        access_token = body.access_token;
-        refresh_token = body.refresh_token;
+        const access_token = body.access_token;
+        const refresh_token = body.refresh_token;
+        let userId;
+
+        let spotifyApi = new SpotifyWebApi({
+          clientId: client_id,
+          clientSecret: client_secret,
+          redirectUri: redirect_uri
+        });
         spotifyApi.setAccessToken(access_token);
-        spotifyApi
+        res.cookie('at', access_token, { maxAge: 60000 });
+        await spotifyApi
           .getMe()
           .then(data => {
             userId = data.body.id;
@@ -122,6 +123,7 @@ app.get("/callback", function(req, res) {
             console.log(err);
             res.send("There was an error during the authentication");
           });
+        res.cookie('userId', userId, { maxAge: 60000 });
         res.redirect("/");
       } else {
         res.send("There was an error during the authentication");
@@ -156,104 +158,117 @@ app.get("/refresh_token", function(req, res) {
 });
 
 app.get("/dig", async (req, res) => {
-  let happinessVal = req.query.happiness;
-  let energyVal = req.query.energy;
-  let tempoVal = req.query.tempo;
-  let properTracks = [];
-  await createPlaylist(100);
+  let access_token = req.cookies.at;
+  let userId = req.cookies.userId;
+  if (!access_token || !userId) {
+    res.redirect('/')
+  } else {
+    let happinessVal = req.query.happiness;
+    let energyVal = req.query.energy;
+    let tempoVal = req.query.tempo;
+    let properTracks = [];
 
-  async function createPlaylist(tryCount) {
-    let playlistUri;
-    for (let i = 0; i < tryCount; i++) {
-      await new Promise(r => setTimeout(r, 3000));
-      let q = queryStrs[getRandomInt(0, queryStrs.length)];
-      spotifyApi
-        .searchTracks(q, {
-          market: "JP",
-          limit: 5,
-          offset: getRandomInt(1, 1000)
-        })
-        .then(data => {
-          let tracks = data.body.tracks.items;
-          for (let track of tracks) {
-            spotifyApi
-              .getAudioFeaturesForTrack(track.id)
-              .then(data => {
-                let featureResult = data.body;
-                if (isProperTrack(featureResult)) {
-                  properTracks.push(track.uri);
-                }
-              })
-              .catch(err => {
-                console.log(err);
-              });
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        });
-      if (properTracks.length > 6) {
-        let now = new Date();
-        let ts = dateformat(now, "yyyy/mm/dd H:M:s");
+    let spotifyApi = new SpotifyWebApi({
+      clientId: client_id,
+      clientSecret: client_secret,
+      redirectUri: redirect_uri
+    });
+    spotifyApi.setAccessToken(access_token);
+    await createPlaylist(100);
+  
+    async function createPlaylist(tryCount) {
+      let playlistUri;
+      for (let i = 0; i < tryCount; i++) {
+        await new Promise(r => setTimeout(r, 3000));
+        let q = queryStrs[getRandomInt(0, queryStrs.length)];
         spotifyApi
-          .createPlaylist(userId, ts)
+          .searchTracks(q, {
+            market: "JP",
+            limit: 5,
+            offset: getRandomInt(1, 1000)
+          })
           .then(data => {
-            let playlistId = data.body.id;
-            playlistUri = data.body.external_urls.spotify;
-            spotifyApi
-              .addTracksToPlaylist(playlistId, properTracks)
-              .then(data => {
-                console.log("playlist:");
-                console.log(playlistUri);
-                res.redirect(playlistUri);
-              })
-              .catch(err => {
-                console.log(err);
-                res.send('something wrong!!');
-              });
+            let tracks = data.body.tracks.items;
+            for (let track of tracks) {
+              spotifyApi
+                .getAudioFeaturesForTrack(track.id)
+                .then(data => {
+                  let featureResult = data.body;
+                  if (isProperTrack(featureResult)) {
+                    properTracks.push(track.uri);
+                  }
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            }
           })
           .catch(err => {
             console.log(err);
-            res.send('something wrong!!');
           });
-        break;
+        if (properTracks.length > 6) {
+          let now = new Date();
+          let ts = dateformat(now, "yyyy/mm/dd H:M:s");
+          spotifyApi
+            .createPlaylist(userId, ts)
+            .then(data => {
+              let playlistId = data.body.id;
+              playlistUri = data.body.external_urls.spotify;
+              spotifyApi
+                .addTracksToPlaylist(playlistId, properTracks)
+                .then(data => {
+                  console.log("playlist:");
+                  console.log(playlistUri);
+                  res.redirect(playlistUri);
+                })
+                .catch(err => {
+                  console.log(err);
+                  res.send('something wrong!!');
+                });
+            })
+            .catch(err => {
+              console.log(err);
+              res.send('something wrong!!');
+            });
+          break;
+        }
       }
     }
-  }
 
-  function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-  }
-
-  function isProperTrack(feature) {
-    judgeCount = 0;
-    if (
-      happinessVal / 100 - tolerance < feature.valence &&
-      feature.valence < happinessVal / 100 + tolerance
-    ) {
-      judgeCount += 1;
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
     }
 
-    if (
-      energyVal / 100 - tolerance < feature.energy &&
-      feature.energy < energyVal / 100 + tolerance
-    ) {
-      judgeCount += 1;
-    }
+    function isProperTrack(feature) {
+      judgeCount = 0;
+      if (
+        happinessVal / 100 - tolerance < feature.valence &&
+        feature.valence < happinessVal / 100 + tolerance
+      ) {
+        judgeCount += 1;
+      }
 
-    if (
-      tempoVal - tempoTolerance < feature.tempo &&
-      feature.tempo < tempoVal + tempoTolerance
-    ) {
-      judgeCount += 1;
-    }
+      if (
+        energyVal / 100 - tolerance < feature.energy &&
+        feature.energy < energyVal / 100 + tolerance
+      ) {
+        judgeCount += 1;
+      }
 
-    if (judgeCount >= 2) {
-      return true;
-    } else {
-      return false;
+      if (
+        tempoVal - tempoTolerance < feature.tempo &&
+        feature.tempo < tempoVal + tempoTolerance
+      ) {
+        judgeCount += 1;
+      }
+
+      if (judgeCount >= 2) {
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 });
