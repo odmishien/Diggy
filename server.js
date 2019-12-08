@@ -175,7 +175,7 @@ app.get("/dig", async (req, res) => {
     });
     spotifyApi.setAccessToken(access_token);
     await createPlaylist(100);
-  
+
     async function createPlaylist(tryCount) {
       let playlistUri;
       for (let i = 0; i < tryCount; i++) {
@@ -207,7 +207,8 @@ app.get("/dig", async (req, res) => {
             console.log(err);
           });
         if (properTracks.length > 6) {
-          let now = new Date();
+          // もう日本時間にしたろ
+          let now = new Date().toLocaleString({ timeZone: 'Asia/Tokyo' });
           let ts = dateformat(now, "yyyy/mm/dd H:M:s");
           spotifyApi
             .createPlaylist(userId, ts)
