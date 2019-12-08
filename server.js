@@ -192,7 +192,7 @@ app.get("/dig", async (req, res) => {
         .catch(err => {
           console.log(err);
         });
-      if (properTracks.length > 10) {
+      if (properTracks.length > 6) {
         let now = new Date();
         let ts = dateformat(now, "yyyy/mm/dd HH:MM:ss");
         spotifyApi
