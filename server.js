@@ -194,7 +194,7 @@ app.get("/dig", async (req, res) => {
         });
       if (properTracks.length > 6) {
         let now = new Date();
-        let ts = dateformat(now, "yyyy/mm/dd HH:MM:ss");
+        let ts = dateformat(now, "yyyy/mm/dd H:M:s");
         spotifyApi
           .createPlaylist(userId, ts)
           .then(data => {
