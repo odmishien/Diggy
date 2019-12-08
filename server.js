@@ -7,9 +7,9 @@ const SpotifyWebApi = require("spotify-web-api-node");
 const path = require("path");
 const dateformat = require("dateformat");
 
-const client_id = "977cc2d4f219406ba00b32e14ab2fefc";
-const client_secret = "ce903335943c4d35b642ca0b1c8df58f";
-const redirect_uri = "http://localhost:8888/callback";
+const client_id = process.env.CLIENT_ID;
+const client_secret = process.env.CLIENT_SECRET;
+const redirect_uri = process.env.REDIRECT_URL;
 const tolerance = 0.1;
 const tempoTolerance = 20;
 const queryStrs =
@@ -42,6 +42,7 @@ var generateRandomString = function(length) {
 var stateKey = "spotify_auth_state";
 
 var app = express();
+app.set('port', (process.env.PORT || 5000));
 
 app
   .use(express.static(__dirname + "/public", { index: false }))
@@ -257,5 +258,4 @@ app.get("/dig", async (req, res) => {
   }
 });
 
-console.log("Listening on 8888");
-app.listen(8888);
+app.listen(app.get('port'));
