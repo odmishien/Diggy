@@ -1,1 +1,1 @@
-# easySpotifyPlayer
+# Diggy
