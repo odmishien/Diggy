@@ -52,12 +52,6 @@ h6 {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-#loading h3 {
-  position: absolute;
-  top: 60%;
-  font-family: 'Press Start 2P', cursive;
-  color: white;
-}
 
 .btn {
   background-color: #1DB954;
