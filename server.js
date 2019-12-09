@@ -13,7 +13,7 @@ const redirect_uri = process.env.REDIRECT_URL;
 const tolerance = 0.1;
 const tempoTolerance = 20;
 const queryStrs =
-  "abcdefghijklmnopqrstuvwxyzあいうえおかきくけこさしすせそたちってとなにぬねのはひふへほまみむめもやゆよわをん";
+  "abcdefghijklmnopqrstuvwxyzあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをん";
 
 /**
  * Generates a random string containing numbers and letters
@@ -113,7 +113,7 @@ app.get("/callback", function(req, res) {
           redirectUri: redirect_uri
         });
         spotifyApi.setAccessToken(access_token);
-        res.cookie('at', access_token, { maxAge: 600000 });
+        res.cookie('at', access_token, { maxAge: 60000 });
         await spotifyApi
           .getMe()
           .then(data => {
@@ -123,7 +123,7 @@ app.get("/callback", function(req, res) {
             console.log(err);
             res.send("There was an error during the authentication");
           });
-        res.cookie('userId', userId, { maxAge: 600000 });
+        res.cookie('userId', userId, { maxAge: 60000 });
         res.redirect("/");
       } else {
         res.send("There was an error during the authentication");
