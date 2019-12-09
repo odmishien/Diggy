@@ -209,7 +209,7 @@ app.get("/dig", async (req, res) => {
             console.log(err);
           });
         if (properTracks.length > 6) {
-          let now = new Date();
+          let now = new Date().toLocaleString({ timeZone: 'Asia/Tokyo' });
           let ts = dateformat(now, "yyyy/mm/dd HH:MM:ss");
           spotifyApi
             .createPlaylist(userId, ts)
