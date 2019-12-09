@@ -1,4 +1,5 @@
 const express = require("express");
+const ejs = require('ejs')
 const request = require("request");
 const cors = require("cors");
 const querystring = require("querystring");
@@ -35,6 +36,7 @@ var stateKey = "spotify_auth_state";
 
 var app = express();
 app.set('port', (process.env.PORT || 5000));
+app.set('ejs',ejs.renderFile)
 
 app
   .use(express.static(__dirname + "/public", { index: false }))
@@ -219,11 +221,11 @@ app.get("/dig", async (req, res) => {
                 .then(data => {
                   console.log("playlist:");
                   console.log(playlistUri);
-                  res.redirect(playlistUri);
+                  res.render('result.ejs', { playlistId: playlistId });
                 })
                 .catch(err => {
                   console.log(err);
-                  res.send('something wrong!!');
+                  res.render('something wrong!!');
                 });
             })
             .catch(err => {
