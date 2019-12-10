@@ -202,10 +202,8 @@ app.get("/dig", async (req, res) => {
                 .then(data => {
                   let featureResult = data.body;
                   if (isProperTrack(featureResult)) {
-                    console.log(track.uri);
                     properTracks.push(track.uri);
                   } else {
-                    console.log("not proper!!");
                   }
                 })
                 .catch(err => {
@@ -295,7 +293,6 @@ app.get("/dig", async (req, res) => {
               .then(data => {
                 console.log("playlist:");
                 console.log(playlistUri);
-                console.log("isForce!!");
                 isForce = true;
                 res.render("result.ejs", { playlistId: playlistId });
               })
