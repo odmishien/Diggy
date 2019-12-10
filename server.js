@@ -1,5 +1,5 @@
 const express = require("express");
-const ejs = require('ejs')
+const ejs = require("ejs");
 const request = require("request");
 const cors = require("cors");
 const querystring = require("querystring");
@@ -35,15 +35,15 @@ var generateRandomString = function(length) {
 var stateKey = "spotify_auth_state";
 
 var app = express();
-app.set('port', (process.env.PORT || 5000));
-app.set('ejs',ejs.renderFile)
+app.set("port", process.env.PORT || 5000);
+app.set("ejs", ejs.renderFile);
 
 app
   .use(express.static(__dirname + "/public", { index: false }))
   .use(cors())
   .use(cookieParser());
 
-app.get("/", function (req, res) {
+app.get("/", function(req, res) {
   let access_token = req.cookies.at;
   let userId = req.cookies.userId;
   if (access_token && userId) {
@@ -115,7 +115,7 @@ app.get("/callback", function(req, res) {
           redirectUri: redirect_uri
         });
         spotifyApi.setAccessToken(access_token);
-        res.cookie('at', access_token, { maxAge: 60000 });
+        res.cookie("at", access_token, { maxAge: 600000 });
         await spotifyApi
           .getMe()
           .then(data => {
@@ -125,7 +125,7 @@ app.get("/callback", function(req, res) {
             console.log(err);
             res.send("There was an error during the authentication");
           });
-        res.cookie('userId', userId, { maxAge: 60000 });
+        res.cookie("userId", userId, { maxAge: 600000 });
         res.redirect("/");
       } else {
         res.send("There was an error during the authentication");
@@ -163,12 +163,14 @@ app.get("/dig", async (req, res) => {
   let access_token = req.cookies.at;
   let userId = req.cookies.userId;
   if (!access_token || !userId) {
-    res.redirect('/')
+    res.redirect("/");
   } else {
     let happinessVal = req.query.happiness;
     let energyVal = req.query.energy;
     let tempoVal = req.query.tempo;
     let properTracks = [];
+    let isForce = false;
+    let playlistUri;
 
     let spotifyApi = new SpotifyWebApi({
       clientId: client_id,
@@ -179,14 +181,17 @@ app.get("/dig", async (req, res) => {
     await createPlaylist(100);
 
     async function createPlaylist(tryCount) {
-      let playlistUri;
+      setTimeout(forceCreatePlaylist, 25000);
       for (let i = 0; i < tryCount; i++) {
-        await new Promise(r => setTimeout(r, 3000));
+        if (isForce) {
+          break;
+        }
+        await new Promise(r => setTimeout(r, 1000));
         let q = queryStrs[getRandomInt(0, queryStrs.length)];
         spotifyApi
-          .searchTracks(q, {
+          .searchTracks(`track:${q}`, {
             market: "JP",
-            limit: 5,
+            limit: 3,
             offset: getRandomInt(1, 1000)
           })
           .then(data => {
@@ -197,7 +202,10 @@ app.get("/dig", async (req, res) => {
                 .then(data => {
                   let featureResult = data.body;
                   if (isProperTrack(featureResult)) {
+                    console.log(track.uri);
                     properTracks.push(track.uri);
+                  } else {
+                    console.log("not proper!!");
                   }
                 })
                 .catch(err => {
@@ -209,7 +217,7 @@ app.get("/dig", async (req, res) => {
             console.log(err);
           });
         if (properTracks.length > 6) {
-          let now = new Date().toLocaleString({ timeZone: 'Asia/Tokyo' });
+          let now = new Date().toLocaleString({ timeZone: "Asia/Tokyo" });
           let ts = dateformat(now, "yyyy/mm/dd HH:MM:ss");
           spotifyApi
             .createPlaylist(userId, ts)
@@ -221,16 +229,16 @@ app.get("/dig", async (req, res) => {
                 .then(data => {
                   console.log("playlist:");
                   console.log(playlistUri);
-                  res.render('result.ejs', { playlistId: playlistId });
+                  res.render("result.ejs", { playlistId: playlistId });
                 })
                 .catch(err => {
                   console.log(err);
-                  res.render('something wrong!!');
+                  res.render("something wrong!!");
                 });
             })
             .catch(err => {
               console.log(err);
-              res.send('something wrong!!');
+              res.send("something wrong!!");
             });
           break;
         }
@@ -272,7 +280,39 @@ app.get("/dig", async (req, res) => {
         return false;
       }
     }
+
+    function forceCreatePlaylist() {
+      if (!playlistUri) {
+        let now = new Date().toLocaleString({ timeZone: "Asia/Tokyo" });
+        let ts = dateformat(now, "yyyy/mm/dd HH:MM:ss");
+        spotifyApi
+          .createPlaylist(userId, ts)
+          .then(data => {
+            let playlistId = data.body.id;
+            playlistUri = data.body.external_urls.spotify;
+            spotifyApi
+              .addTracksToPlaylist(playlistId, properTracks)
+              .then(data => {
+                console.log("playlist:");
+                console.log(playlistUri);
+                console.log("isForce!!");
+                isForce = true;
+                res.render("result.ejs", { playlistId: playlistId });
+              })
+              .catch(err => {
+                console.log(err);
+                isForce = true;
+                res.render("something wrong!!");
+              });
+          })
+          .catch(err => {
+            console.log(err);
+            isForce = true;
+            res.send("something wrong!!");
+          });
+      }
+    }
   }
 });
 
-app.listen(app.get('port'));
+app.listen(app.get("port"));
