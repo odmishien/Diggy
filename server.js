@@ -184,9 +184,9 @@ app.get("/dig", async (req, res) => {
         await new Promise(r => setTimeout(r, 3000));
         let q = queryStrs[getRandomInt(0, queryStrs.length)];
         spotifyApi
-          .searchTracks(`track:${q}`, {
+          .searchTracks(q, {
             market: "JP",
-            limit: 3,
+            limit: 5,
             offset: getRandomInt(1, 1000)
           })
           .then(data => {
