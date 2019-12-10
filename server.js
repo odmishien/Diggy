@@ -186,7 +186,7 @@ app.get("/dig", async (req, res) => {
         spotifyApi
           .searchTracks(`track:${q}`, {
             market: "JP",
-            limit: 5,
+            limit: 3,
             offset: getRandomInt(1, 1000)
           })
           .then(data => {
