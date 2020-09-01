@@ -24,10 +24,10 @@ $ export REDIRECT_URL={YOUR_REDIRECT_URL}
 
 `npm start` で `http://localhost:5000` にサーバーが立ち上がります
 
-## Licence
+## 💳 Licence
 
 [MIT](https://github.com/odmishien/Diggy/blob/master/LICENSE)
 
-## Author
+## ✍️ Author
 
 [odmishien](https://github.com/odmishien)
