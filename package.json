@@ -1,5 +1,5 @@
 {
-  "name": "easyspotifyplayer",
+  "name": "Diggy",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/odmishien/easySpotifyPlayer.git"
+    "url": "git+ssh://git@github.com/odmishien/Diggy.git"
   },
   "author": "odmishien",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/odmishien/easySpotifyPlayer/issues"
+    "url": "https://github.com/odmishien/Diggy/issues"
   },
-  "homepage": "https://github.com/odmishien/easySpotifyPlayer#readme",
+  "homepage": "https://github.com/odmishien/Diggy#readme",
   "dependencies": {
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
